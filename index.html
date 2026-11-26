@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Школа № 249: Без выхода</title>
+<style>
+  :root {
+    --bg: #0b1120;
+    --panel: #1e293b;
+    --panel-light: #334155;
+    --accent: #38bdf8;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warn: #f59e0b;
+    --purple: #a855f7;
+    --pink: #ec4899;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+  }
+  header {
+    background: #020617; padding: 8px 14px; display: flex;
+    justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; gap: 8px; flex-wrap: wrap;
+  }
+  .stats { display: flex; gap: 8px; align-items: center; font-size: 12.5px; flex-wrap: wrap; }
+  .stat-box { background: var(--panel); padding: 5px 9px; border-radius: 8px; border: 1px solid #334155; }
+  .bar-wrap { width: 70px; height: 8px; background: #0f172a; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 4px; }
+  .bar-fill { height: 100%; transition: width 0.25s; }
+  .phone-toggle {
+    background: linear-gradient(135deg, #0284c7, #2563eb); color: white; border: none;
+    padding: 7px 12px; border-radius: 9px; font-weight: bold; cursor: pointer; font-size: 12.5px;
+  }
+  .phone-toggle.stolen { background: #7f1d1d; }
+  main { display: grid; grid-template-columns: 270px 1fr 435px; flex: 1; overflow: hidden; }
+  main.phone-closed { grid-template-columns: 270px 1fr; }
+  main.phone-closed .phone-col { display: none; }
+  .col { padding: 12px; overflow-y: auto; border-right: 1px solid #334155; }
+  .col:last-child { border-right: none; }
+  h2, h3 { margin-top: 0; font-size: 15px; color: var(--accent); }
+  .floor-title {
+    font-size: 11.5px; font-weight: bold; color: #94a3b8; text-transform: uppercase;
+    margin: 10px 0 5px 0; padding-bottom: 3px; border-bottom: 1px solid #334155;
+  }
+  .room-btn {
+    width: 100%; text-align: left; background: var(--panel); color: var(--text);
+    border: 1px solid #334155; padding: 7px 9px; margin-bottom: 5px; border-radius: 8px;
+    cursor: pointer; transition: 0.15s; display: flex; justify-content: space-between; align-items: center; font-size: 12px;
+  }
+  .room-btn:hover { background: var(--panel-light); border-color: var(--accent); }
+  .room-btn.active { background: #0369a1; border-color: #7dd3fc; font-weight: bold; }
+  .badge { font-size: 10px; padding: 2px 5px; border-radius: 4px; background: #0f172a; color: var(--muted); }
+  .badge.teacher { background: #7f1d1d; color: #fecaca; }
+  .badge.socket { background: #064e3b; color: #6ee7b7; }
+  .card { background: var(--panel); border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .timer-banner {
+    background: linear-gradient(90deg, #1e1b4b, #312e81); border: 1px solid #6366f1;
+    border-radius: 10px; padding: 10px 13px; margin-bottom: 10px; display: none;
+  }
+  .timer-banner.duty {
+    background: linear-gradient(90deg, #064e3b, #065f46); border-color: #10b981;
+  }
+  .event-box {
+    background: #271a1a; border: 1px solid var(--warn); border-radius: 8px;
+    padding: 9px; margin-top: 8px; font-size: 12.5px;
+  }
+  .action-btn {
+    background: #2563eb; color: white; border: none; padding: 7px 11px;
+    border-radius: 7px; cursor: pointer; margin: 3px 4px 3px 0; font-size: 12px;
+  }
+  .action-btn:hover { background: #1d4ed8; }
+  .action-btn:disabled { background: #334155; color: #94a3b8; cursor: default; }
+  .action-btn.stealth { background: #0d9488; }
+  .action-btn.sleep { background: #7c3aed; }
+  .action-btn.nastya { background: #db2777; }
+  .action-btn.warn { background: #d97706; }
+  .action-btn.danger { background: #dc2626; }
+  .log {
+    background: #020617; border: 1px solid #334155; border-radius: 8px;
+    padding: 9px; height: 165px; overflow-y: auto; font-size: 12.5px; line-height: 1.42;
+  }
+  .log p { margin: 0 0 6px 0; }
+  .hero-strip {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; font-size: 11.5px;
+  }
+  .char-pill {
+    background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 5px 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .swatch { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #94a3b8; display: inline-block; }
+  .phone {
+    background: #020617; border: 4px solid #475569; border-radius: 26px;
+    padding: 10px; display: flex; flex-direction: column; height: 100%; box-shadow: 0 0 25px rgba(0,0,0,0.65);
+  }
+  .phone-top {
+    display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: #e2e8f0;
+    padding: 2px 8px 6px 8px; border-bottom: 1px solid #1e293b; font-weight: bold;
+  }
+  .app-dock { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 7px 0; }
+  .app-btn {
+    background: var(--panel); color: var(--text); border: 1px solid #334155; padding: 6px 2px;
+    border-radius: 7px; font-size: 10.5px; cursor: pointer; text-align: center;
+  }
+  .app-btn.active { background: var(--accent); color: #020617; font-weight: bold; border-color: var(--accent); }
+  .phone-screen {
+    flex: 1; overflow-y: auto; background: #0b1120; border-radius: 11px; padding: 10px; font-size: 12.5px;
+  }
+  .site-header {
+    background: #1e293b; padding: 8px 10px; border-radius: 7px; margin-bottom: 8px;
+    border-bottom: 2px solid var(--danger);
+  }
+  .site-post { background: var(--panel); padding: 9px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--accent); }
+  .site-post.crime { border-left-color: var(--danger); background: #1f1726; }
+  .site-post.nastya { border-left-color: var(--pink); background: #231424; }
+  .site-post.done { border-left-color: var(--success); opacity: 0.75; }
+  .student-row {
+    padding: 6px 8px; border-bottom: 1px solid #1e293b; font-size: 11.5px;
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+  }
+  .student-row:hover { background: #1e293b; }
+  input, select {
+    width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid #475569;
+    background: var(--panel); color: white; margin-bottom: 5px; font-size: 12px;
+  }
+  .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .readonly-bar {
+    background: #1e293b; color: #94a3b8; padding: 7px 10px; border-radius: 7px;
+    font-size: 11px; text-align: center; margin-top: 8px; border: 1px dashed #475569;
+  }
+  .modal {
+    position: fixed; inset: 0; background: rgba(2,6,23,0.92);
+    display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px;
+  }
+  .modal-box { background: var(--panel); max-width: 550px; width: 100%; padding: 22px; border-radius: 14px; border: 1px solid var(--accent); text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div><strong>🏫 ШКОЛА № 249: БЕЗ ВЫХОДА</strong> <span style="color:var(--muted); font-size:11.5px;">| Дима (6Б, замстаросты, без дома)</span></div>
+  <div class="stats">
+    <div class="stat-box" id="clockBox">День 1 (Пн) • 08:40</div>
+    <div class="stat-box">Энергия:
+      <div class="bar-wrap"><div id="energyBar" class="bar-fill" style="width:100%; background:var(--success);"></div></div>
+    </div>
+    <div class="stat-box">Батарея:
+      <div class="bar-wrap"><div id="batBar" class="bar-fill" style="width:85%; background:#38bdf8;"></div></div>
+      <span id="batVal">85%</span>
+    </div>
+    <div class="stat-box">Подозрение:
+      <div class="bar-wrap"><div id="suspBar" class="bar-fill" style="width:0%; background:var(--danger);"></div></div>
+      <span id="suspVal">0%</span>
+    </div>
+    <button class="phone-toggle" id="phoneToggleBtn" onclick="togglePhone()">📱 Смартфон</button>
+  </div>
+</header>
+
+<main id="mainGrid">
+  <div class="col">
+    <h2>📍 Этажи школы № 249</h2>
+    <div style="font-size:11px; color:var(--muted); margin-bottom:6px;">
+      3 этаж — только началка (1–4 кл.), туда Дима не ходит.
+    </div>
+    <div id="roomsList"></div>
+  </div>
+
+  <div class="col">
+    <div class="timer-banner" id="timerBanner">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong id="bannerTitle">📚 Идёт урок</strong>
+          <div style="font-size:12px; color:#e2e8f0;" id="bannerSub"></div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px; color:#cbd5e1;" id="bannerLabel">Осталось времени:</div>
+          <strong id="bannerClock" style="font-size:18px; color:#fbbf24;">05:00</strong>
+        </div>
+      </div>
+      <div id="bannerEventBox"></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 id="roomTitle" style="margin-bottom:4px;">Холл 1 этажа и будка охранника</h2>
+        <span id="roomFloorTag" class="badge">1 этаж</span>
+      </div>
+      <p id="roomDesc" style="color:#cbd5e1; font-size:13px; margin-top:4px;"></p>
+      <div id="teacherInfo" style="margin-bottom:6px; font-size:12.5px;"></div>
+      <div id="peopleInRoom" class="hero-strip"></div>
+    </div>
+
+    <div class="card">
+      <h3>🕵️ Действия Димы (в портфеле есть зарядка)</h3>
+      <div id="actionsArea"></div>
+    </div>
+
+    <h3>📜 Журнал событий и напарничества</h3>
+    <div class="log" id="gameLog"></div>
+  </div>
+
+  <div class="col phone-col">
+    <div class="phone" id="phoneFrame">
+      <div class="phone-top">
+        <span>📶 Shkola249_WiFi</span>
+        <span id="phoneClock" style="color:#38bdf8; font-size:12.5px;">🕒 08:40</span>
+        <span id="phoneBat">🔋 85%</span>
+      </div>
+      <div class="app-dock">
+        <button class="app-btn active" onclick="openApp('browser')">🌐 Браузер</button>
+        <button class="app-btn" onclick="openApp('podslushka')">💬 Подслушка</button>
